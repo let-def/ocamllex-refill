@@ -43,12 +43,14 @@ type ident_info =
 
 type t_env = (ident * ident_info) list
 
-type ('args,'action) automata_entry =
-  { auto_name: string;
-    auto_args: 'args ;
-    auto_mem_size : int ;
-    auto_initial_state: int * memory_action list ;
-    auto_actions: (int * t_env * 'action) list }
+type ('args,'action) automata_entry = {
+  auto_name: string;
+  auto_args: 'args ;
+  auto_mem_size : int;
+  auto_initial_state: int * memory_action list;
+  auto_actions: (int * t_env * 'action) list;
+  auto_refill_handler: 'action option;
+}
 
 (* The entry point *)
 

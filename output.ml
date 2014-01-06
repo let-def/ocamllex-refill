@@ -69,7 +69,7 @@ let output_tables oc tbl =
 
 (* Output the entries *)
 
-let output_entry sourcefile ic oc oci refill_handler e =
+let output_entry sourcefile ic oc oci e =
   let init_num, init_moves = e.auto_initial_state in
   fprintf oc "%s %alexbuf =\
 \n  %a%a  __ocaml_lex_%s_rec %alexbuf %d\n"
@@ -96,14 +96,16 @@ let output_entry sourcefile ic oc oci refill_handler e =
       copy_chunk ic oc oci loc true;
       fprintf oc "\n")
     e.auto_actions;
-  match refill_handler with
+  match e.auto_refill_handler with
   | None ->
     fprintf oc "  | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf; \
                 __ocaml_lex_%s_rec %alexbuf __ocaml_lex_state\n\n"
       e.auto_name output_args e.auto_args
-  | Some h ->
-    fprintf oc "  | __ocaml_lex_state -> %s __ocaml_lex_%s_refill \
-                     lexbuf __ocaml_lex_state\n\n" h e.auto_name;
+  | Some loc ->
+    fprintf oc "  | __ocaml_lex_state -> ";
+    copy_chunk ic oc oci loc true;
+    fprintf oc " __ocaml_lex_%s_refill %alexbuf __ocaml_lex_state\n\n"
+      e.auto_name output_args e.auto_args;
     fprintf oc "and __ocaml_lex_%s_refill %alexbuf __ocaml_lex_state =\n\
                \  lexbuf.Lexing.refill_buff lexbuf;\n\
                \  __ocaml_lex_%s_rec %alexbuf __ocaml_lex_state\n\n"
@@ -114,7 +116,7 @@ let output_entry sourcefile ic oc oci refill_handler e =
 
 exception Table_overflow
 
-let output_lexdef sourcefile ic oc oci rh header tables entry_points trailer =
+let output_lexdef sourcefile ic oc oci header tables entry_points trailer =
   if not !Common.quiet_mode then
     Printf.printf "%d states, %d transitions, table size %d bytes\n"
       (Array.length tables.tbl_base)
@@ -138,9 +140,9 @@ let output_lexdef sourcefile ic oc oci rh header tables entry_points trailer =
   begin match entry_points with
     [] -> ()
   | entry1 :: entries ->
-      output_string oc "let rec "; output_entry sourcefile ic oc oci rh entry1;
+      output_string oc "let rec "; output_entry sourcefile ic oc oci entry1;
       List.iter
-        (fun e -> output_string oc "and "; output_entry sourcefile ic oc oci rh e)
+        (fun e -> output_string oc "and "; output_entry sourcefile ic oc oci e)
         entries;
       output_string oc ";;\n\n";
   end;

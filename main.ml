@@ -17,7 +17,6 @@ open Syntax
 let ml_automata = ref false
 let source_name = ref None
 let output_name = ref None
-let refill_handler = ref ""
 
 let usage = "usage: ocamlex [options] sourcefile"
 
@@ -35,8 +34,6 @@ let specs =
   ["-ml", Arg.Set ml_automata,
     " Output code that does not use the Lexing module built-in automata \
      interpreter";
-   "-refill-handler", Arg.Set_string refill_handler,
-    " <ident> Function to call when lexer need to be refilled";
    "-o", Arg.String (fun x -> output_name := Some x),
     " <file>  Set output file name to <file>";
    "-q", Arg.Set Common.quiet_mode, " Do not display informational messages";
@@ -81,8 +78,7 @@ let main () =
         def.header entries transitions def.trailer
     end else begin
        let tables = Compact.compact_tables transitions in
-       let refill_handler = match !refill_handler with "" -> None | s -> Some s in
-       Output.output_lexdef source_name ic oc tr refill_handler
+       Output.output_lexdef source_name ic oc tr
          def.header tables entries def.trailer
     end;
     close_in ic;
