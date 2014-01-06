@@ -104,10 +104,11 @@ let output_entry sourcefile ic oc oci refill_handler e =
   | Some h ->
     fprintf oc "  | __ocaml_lex_state -> %s __ocaml_lex_%s_refill \
                      lexbuf __ocaml_lex_state\n\n" h e.auto_name;
-    fprintf oc "and __ocaml_lex_%s_refill lexbuf __ocaml_lex_state =\n\
+    fprintf oc "and __ocaml_lex_%s_refill %alexbuf __ocaml_lex_state =\n\
                \  lexbuf.Lexing.refill_buff lexbuf;\n\
                \  __ocaml_lex_%s_rec %alexbuf __ocaml_lex_state\n\n"
-      e.auto_name e.auto_name output_args e.auto_args
+      e.auto_name output_args e.auto_args
+      e.auto_name output_args e.auto_args
 
 (* Main output function *)
 
