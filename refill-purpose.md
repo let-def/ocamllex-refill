@@ -1,9 +1,11 @@
 The patch introduces a new "refill" action associated to a lexing rule.
 It's optional and if unused the lexer specification and behavior are unchanged.
 
-When specified, it allows the user to take back control flow when the lexer is
-refilling. As the lexbuf refilling function is usually full of side-effects,
-it's often desirable to interrupt and resume later.
+When specified, it allows the user to control the way the lexer is
+refilled. For example, an appropriate refill handler could perform
+the blocking operations of refilling under a concurrency monad such
+as `Lwt` or `Async`, to work better in a cooperative concurrency
+setting.
 
 To make use of this feature, a lexing rule should be upgraded from:
 
@@ -12,13 +14,13 @@ To make use of this feature, a lexing rule should be upgraded from:
 
 to:
 
-    rule entry_name arg1 = refill {refill_expression} parse
+    rule entry_name arg1 = refill {refill_function} parse
       | ...
 
 ### General idea
 
-[refill_expression] is a function which will be invoked by the lexer
-immediately before refilling the buffer.  The function will receive as
+`refill_function` is a function which will be invoked by the lexer
+immediately before refilling the buffer. The function will receive as
 arguments the continuation to invoke to resume the lexing, as well as all other
 values to be passed to the continuation.
 
@@ -27,10 +29,11 @@ More precisely, it's a function of type:
      'param_0 -> ... -> 'param_n -> Lexing.lexbuf -> int -> 'a
 
 where:
-- 'param_0, ..., 'param_n are types of the parameters of the lexing rule
-- the int represents the local state of the lexing automaton
+- `'param_0`, ..., `'param_n` are types of the parameters of the lexing rule
+- the `int` represents the state of the lexing automaton
 - the first argument is the continuation (which as the exact same type as the
-  rest of the function)
+  rest of the function), which captures the processing ocamllex would usually
+  perform (refilling the buffer, then calling the lexing function again)
 
 ### Anatomy of generated lexers
 
@@ -58,9 +61,9 @@ The code generated for the rule looks like:
         | 2 -> ( main counter lexbuf )
         | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf; __ocaml_lex_main_rec counter lexbuf __ocaml_lex_state
 
-1. the "main" function only purpose is to invoke "__ocaml_lex_main_rec"
+1. the `main` function only purpose is to invoke `__ocaml_lex_main_rec`
 starting from the initial state.
-2. the "__ocaml_lex_main_rec" function first calls the lexing engine then
+2. the `__ocaml_lex_main_rec` function first calls the lexing engine then
 dispatches on its result:
 - in terminal states, user actions are executed
 - in other states, first the buffer gets refilled then the code loops
@@ -104,10 +107,10 @@ The generated code now looks like:
 
 1. The first part is unchanged.
 2. The refill case is now split in two parts:
-   - the "__ocaml_lex_main_refill" doing the work that was previously done
+   - the `__ocaml_lex_main_refill` doing the work that was previously done
      directly in the branch action: refilling buffer and looping.
    - in the branch, just call the user refill action with
-     "__ocaml_lex_main_refill" as the continuation
+     `__ocaml_lex_main_refill` as the continuation
 
 ### Design considerations
 
@@ -140,6 +143,6 @@ Furthermore, this choice ensures a runtime cost close to zero.
 
 ### Testing separately
 
-[https://github.com/def-lkb/ocamllex] repository provides a standalone version
+The repository <https://github.com/def-lkb/ocamllex> provides a standalone version
 of ocamllex with this extension and is otherwise completely compatible with
 ocaml 4.01 ocamllex.
