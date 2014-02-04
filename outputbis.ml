@@ -193,7 +193,8 @@ let output_entry_refill oc e =
 let output_entry_close_refill oc e =
   fprintf oc "  with Ocaml_lex_refill __ocaml_lex_state ->\
             \n  __ocaml_lex_refill \
-                 (fun lexbuf -> __ocaml_lex_%s_rec __ocaml_lex_state %alexbuf)\
+                 (fun lexbuf -> lexbuf.Lexing.refill_buff lexbuf;\
+            \n      __ocaml_lex_%s_rec __ocaml_lex_state %alexbuf)\
             \n    lexbuf"
     e.auto_name output_args e.auto_args
 
