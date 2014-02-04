@@ -72,16 +72,16 @@ let main () =
   try
     let def = Parser.lexer_definition Lexer.main lexbuf in
     let (entries, transitions) =
-      Lexgen.make_dfa def.refill_handler def.entrypoints
+      Lexgen.make_dfa def.entrypoints
     in
     if !ml_automata then begin
       Outputbis.output_lexdef
         source_name ic oc tr
-        def.header entries transitions def.trailer
+        def.header def.refill_handler entries transitions def.trailer
     end else begin
        let tables = Compact.compact_tables transitions in
        Output.output_lexdef source_name ic oc tr
-         def.header tables entries def.trailer
+         def.header def.refill_handler tables entries def.trailer
     end;
     close_in ic;
     close_out oc;
