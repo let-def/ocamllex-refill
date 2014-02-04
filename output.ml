@@ -104,12 +104,7 @@ let output_entry sourcefile ic oc oci e =
   | Some loc ->
     fprintf oc "  | __ocaml_lex_state ->\n";
     copy_chunk ic oc oci loc true;
-    fprintf oc " __ocaml_lex_%s_refill %alexbuf __ocaml_lex_state\n\n"
-      e.auto_name output_args e.auto_args;
-    fprintf oc "and __ocaml_lex_%s_refill %alexbuf __ocaml_lex_state =\n\
-               \  lexbuf.Lexing.refill_buff lexbuf;\n\
-               \  __ocaml_lex_%s_rec %alexbuf __ocaml_lex_state\n\n"
-      e.auto_name output_args e.auto_args
+    fprintf oc " (fun lexbuf -> __ocaml_lex_%s_rec %alexbuf __ocaml_lex_state) lexbuf\n\n"
       e.auto_name output_args e.auto_args
 
 (* Main output function *)

@@ -55,5 +55,6 @@ type ('args,'action) automata_entry = {
 (* The entry point *)
 
 val make_dfa :
+  'action option ->
   ('args, 'action) Syntax.entry list ->
   ('args, 'action) automata_entry list * automata array

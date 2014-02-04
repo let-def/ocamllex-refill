@@ -506,13 +506,12 @@ let encode_casedef casedef =
       casedef in
   r
 
-let encode_lexdef def =
+let encode_lexdef rh def =
   chars := [];
   chars_count := 0;
   let entry_list =
     List.map
-      (fun {name=entry_name; args=args; shortest=shortest; clauses=casedef;
-            refill_handler=rh} ->
+      (fun {name=entry_name; args=args; shortest=shortest; clauses=casedef} ->
         let (re,actions,_,ntags) = encode_casedef casedef in
         { lex_name = entry_name;
           lex_regexp = re;
@@ -1154,8 +1153,8 @@ let extract_tags l =
   envs
 
 
-let make_dfa lexdef =
-  let (chars, entry_list) = encode_lexdef lexdef in
+let make_dfa rh lexdef =
+  let (chars, entry_list) = encode_lexdef rh lexdef in
   let follow = followpos (Array.length chars) entry_list in
 (*
   dfollow follow ;

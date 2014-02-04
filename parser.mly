@@ -65,10 +65,11 @@ let as_cset = function
 %%
 
 lexer_definition:
-    header named_regexps Trule definition other_definitions header Tend
+    header named_regexps refill_handler Trule definition other_definitions header Tend
         { {header = $1;
-           entrypoints = $4 :: List.rev $5;
-           trailer = $6} }
+           refill_handler = $3;
+           entrypoints = $5 :: List.rev $6;
+           trailer = $7} }
 ;
 header:
     Taction
@@ -94,10 +95,10 @@ refill_handler:
   | /*empty*/ { None }
 ;
 definition:
-    Tident arguments Tequal refill_handler Tparse entry
-      { {name=$1 ; shortest=false ; args=$2 ; refill_handler=$4; clauses=$6} }
-  | Tident arguments Tequal refill_handler Tparse_shortest entry
-      { {name=$1 ; shortest=true ; args=$2 ; refill_handler=$4; clauses=$6} }
+    Tident arguments Tequal Tparse entry
+      { {name=$1 ; shortest=false ; args=$2 ; clauses=$5} }
+  | Tident arguments Tequal Tparse_shortest entry
+      { {name=$1 ; shortest=true ; args=$2 ; clauses=$5} }
 ;
 
 arguments:

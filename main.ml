@@ -71,7 +71,9 @@ let main () =
      Lexing.pos_bol = 0; Lexing.pos_cnum = 0};
   try
     let def = Parser.lexer_definition Lexer.main lexbuf in
-    let (entries, transitions) = Lexgen.make_dfa def.entrypoints in
+    let (entries, transitions) =
+      Lexgen.make_dfa def.refill_handler def.entrypoints
+    in
     if !ml_automata then begin
       Outputbis.output_lexdef
         source_name ic oc tr

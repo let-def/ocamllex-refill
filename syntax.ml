@@ -37,11 +37,11 @@ type ('arg,'action) entry = {
   shortest : bool;
   args : 'arg;
   clauses : (regular_expression * 'action) list;
-  refill_handler : 'action option;
 }
 
 type lexer_definition = {
   header: location;
   entrypoints: ((string list, location) entry) list;
   trailer: location;
+  refill_handler : location option;
 }
