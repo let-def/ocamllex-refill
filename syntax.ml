@@ -42,4 +42,5 @@ type lexer_definition = {
   header: location;
   entrypoints: ((string list, location) entry) list;
   trailer: location;
+  refill_handler : location option;
 }
